@@ -107,7 +107,7 @@ const CONFIG = {
         maxChange: 48
     },
 
-    public: true,
+    public: false,
 
     dashboard: {
         enabled: true,
@@ -120,7 +120,7 @@ const CONFIG = {
 
     noPlayer: false,
 
-    password: "",
+    password: "microlotestuwu",
 
     prefix: "!",
 
