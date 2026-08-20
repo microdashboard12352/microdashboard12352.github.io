@@ -7891,10 +7891,10 @@ async function start() {
         "⏳ Loading HaxBall..."
     );
 
-    const HBInit = 
-        await require("haxball.js").default();
-
-
+    const haxballModule = await require("haxball.js");
+    const HBInit = typeof haxballModule === "function" 
+        ? haxballModule 
+        : (haxballModule.default || haxballModule.HaxballJS);
 
 
     room =
