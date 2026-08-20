@@ -55,7 +55,8 @@ const path = require("path");
 const readline = require("readline");
 const { exec } = require("child_process");
 
-const HaxballJS = require("haxball.js").default;
+const HaxballJS = require("haxball.js"); // 💎 Sin el .default al final
+
 
 
 /* ============================================================
