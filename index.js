@@ -7891,8 +7891,9 @@ async function start() {
         "⏳ Loading HaxBall..."
     );
 
-    const HBInit =
-        await HaxballJS();
+    const HBInit = 
+        await require("haxball.js")();
+
 
 
     room =
