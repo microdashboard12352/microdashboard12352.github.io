@@ -7891,7 +7891,7 @@ async function start() {
     );
 
     const HBInit =
-        await HaxballJS();
+        await HaxballJS.default();
 
     room =
         HBInit({
