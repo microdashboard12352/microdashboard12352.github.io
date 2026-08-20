@@ -54,10 +54,6 @@ const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
 const { exec } = require("child_process");
-const express = require("express");
-const http = require("http");
-const { WebSocketServer } = require("ws");
-const { Pool } = require("pg");
 
 const HaxballJS = require("haxball.js").default;
 
@@ -107,20 +103,11 @@ const CONFIG = {
         maxChange: 48
     },
 
-    public: true,
-
-    dashboard: {
-        enabled: true,
-        host: "0.0.0.0",
-        port: Number(process.env.PORT) || 10000,
-        token: process.env.DASHBOARD_TOKEN || "",
-        publicPath: path.join(__dirname, "dashboard")
-    },
-
+    public: false,
 
     noPlayer: false,
 
-    password: "",
+    password: "microadm",
 
     prefix: "!",
 
@@ -133,7 +120,8 @@ const CONFIG = {
     stadiums: [
         "x1",
         "x3",
-        "x4"
+        "x4",
+        "x5"
     ],
 
     defaultStadium: "x3",
@@ -243,6 +231,11 @@ const MAPS = {
     x4: '{"name":"ðððððððð ððððððð|Haxgoal","width":900,"height":425,"cameraWidth":0,"cameraHeight":0,"maxViewWidth":0,"cameraFollow":"ball","spawnDistance":170,"redSpawnPoints":[[-330,385]],"blueSpawnPoints":[[330,385]],"canBeStored":false,"kickOffReset":"partial","bg":{"color":"0A0A0A","type":"none","height":346,"width":793,"kickOffRadius":95,"cornerRadius":0},"traits":{"ballArea":{"vis":false,"bCoef":1,"cMask":["ball"]},"goalPost":{"radius":8,"invMass":0,"bCoef":0.5},"goalNet":{"vis":true,"bCoef":0.1,"cMask":["ball"]},"kickOffBarrier":{"vis":false,"bCoef":0.1,"cGroup":["redKO","blueKO"],"cMask":["red","blue"]}},"vertexes":[{"x":-795,"y":-345,"bCoef":1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","vis":true,"color":"292929","bias":0},{"x":795,"y":-345,"bCoef":1,"cMask":["ball"],"trait":"ballArea","color":"292929","bias":10,"curve":0},{"x":-795,"y":345,"bCoef":1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","color":"292929","vis":true,"curve":0,"bias":10},{"x":795,"y":345,"bCoef":1,"cMask":["ball"],"trait":"ballArea","color":"292929","vis":true,"curve":0},{"x":0,"y":-345,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"ballArea","color":"292929"},{"x":0,"y":-95,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO"],"trait":"ballArea","color":"70674d","vis":false,"curve":87.5},{"x":0,"y":95,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO"],"trait":"ballArea","color":"c2c1be","vis":false,"curve":-87.5},{"x":0,"y":345,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"ballArea","color":"292929","vis":false},{"x":-795,"y":-85,"bCoef":0.1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","color":"9e8f65","vis":true,"bias":10},{"x":-795,"y":85,"bCoef":0.1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","color":"c2c1be","vis":true,"bias":10},{"x":-850,"y":-85,"bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","color":"292929"},{"x":-850,"y":85,"bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"color":"292929"},{"x":795,"y":-85,"bCoef":0.1,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be","bias":10},{"x":845,"y":-85,"bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","color":"292929"},{"x":845,"y":85,"bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"color":"292929"},{"x":-95,"y":-5,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","color":"a89b76","curve":87.5},{"x":95,"y":-5,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","color":"5c502f","curve":87.5},{"x":-75,"y":-7.5,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","curve":175,"color":"a89b76"},{"x":75,"y":-7.5,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","curve":175,"color":"5c502f"},{"x":-95,"y":5,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","curve":-87.5,"color":"ededed"},{"x":-75,"y":7.5,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","curve":-175,"color":"ededed"},{"x":95,"y":5,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","curve":-87.5,"color":"8f8f8f"},{"x":75,"y":7.5,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","color":"8f8f8f","curve":-175},{"x":-795,"y":-305,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"vis":true,"color":"292929","curve":-90},{"x":795,"y":-305,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"color":"292929","vis":true,"curve":90},{"x":-795,"y":305,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"color":"292929","vis":true,"curve":90},{"x":795,"y":305,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"vis":true,"color":"292929","curve":-90},{"x":-755,"y":-345,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"vis":true,"color":"292929","curve":-90},{"x":755,"y":-345,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"color":"292929","vis":true,"curve":90},{"x":-755,"y":345,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"color":"292929","vis":true,"curve":90},{"x":755,"y":345,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"vis":true,"color":"292929","curve":-90},{"x":795,"y":-130,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"curve":0,"color":"292929"},{"x":420,"y":-345,"cMask":["c0"],"cGroup":["c0"],"curve":0,"color":"292929"},{"x":-420,"y":345,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"curve":0,"color":"292929"},{"x":795,"y":130,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"curve":0,"color":"292929"},{"x":420,"y":345,"cMask":["c0"],"cGroup":["c0"],"curve":0,"color":"292929"},{"x":-420,"y":-345,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"curve":0,"color":"292929"},{"x":710,"y":-130,"cMask":["c0"],"cGroup":["c0"],"curve":-60,"color":"292929"},{"x":710,"y":130,"cMask":["c0"],"cGroup":["c0"],"color":"292929","curve":-60},{"x":420,"y":-95,"cMask":["c0"],"cGroup":["c0"],"color":"292929","curve":-80},{"x":420,"y":95,"cMask":["c0"],"cGroup":["c0"],"color":"292929","curve":-80},{"x":-420,"y":-95,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"color":"292929","curve":80,"_data":{"mirror":{}}},{"x":-420,"y":95,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"color":"292929","curve":80,"_data":{"mirror":{}}},{"x":-550,"y":0,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"color":"292929"},{"x":-555,"y":0,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"color":"292929"},{"x":795,"y":85,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"color":"9e8f65"},{"x":-55,"y":-45,"cMask":["c0"],"color":"9e8f65"},{"x":-55,"y":45,"cMask":["c0"],"color":"9e8f65"},{"x":-35,"y":25,"cMask":["c0"],"color":"70674d"},{"x":-35,"y":-10,"cMask":["c0"],"color":"635d4c"},{"x":-15,"y":-15,"cMask":["c0"],"color":"807352"},{"x":-15,"y":10,"cMask":["c0"],"color":"635d4c"},{"x":20,"y":-45,"cMask":["c0"],"color":"807352"},{"x":0,"y":-10,"cMask":["c0"],"color":"524e43"},{"x":0,"y":10,"cMask":["c0"],"color":"524e43"},{"x":20,"y":-5,"cMask":["c0"],"color":"736641"},{"x":0,"y":25,"cMask":["c0"],"color":"b3b3b3"},{"x":35,"y":0,"cMask":["c0"],"color":"b3b3b3"},{"x":0,"y":65,"bCoef":1,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":20,"y":50,"cMask":["c0"],"color":"c9c9e7"},{"x":20,"y":27.5,"cMask":["c0"],"color":"c9c9e7"},{"x":35,"y":17.5,"cMask":["c0"],"color":"b0b0b0"},{"x":35,"y":45,"cMask":["c0"],"color":"969696"},{"x":55,"y":30,"cMask":["c0"],"color":"969696"},{"x":55,"y":-45,"cMask":["c0"],"color":"969696"},{"x":35,"y":-30,"cMask":["c0"],"color":"c2c1be"},{"x":-795,"y":130,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"curve":180},{"x":-710,"y":130,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"curve":-60},{"x":-710,"y":-130,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"curve":-60},{"x":-795,"y":-130,"bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"x":-795,"y":60,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":-795,"y":-60,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":0,"y":425,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"ballArea","vis":false},{"x":-795,"y":-30,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":-795,"y":30,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":-795,"y":0,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":0,"y":-425,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"ballArea"},{"x":795,"y":60,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":795,"y":-60,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":795,"y":-30,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":795,"y":30,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":795,"y":0,"cMask":["c0"],"cGroup":["c0"],"color":"c2c1be"},{"x":550,"y":0,"cMask":["c0"],"cGroup":["c0"],"color":"292929"},{"x":555,"y":0,"cMask":["c0"],"cGroup":["c0"],"color":"292929"}],"segments":[{"v0":0,"v1":1,"vis":true,"color":"292929","bCoef":1,"cMask":["ball"],"trait":"ballArea","bias":0,"y":-345},{"v0":2,"v1":3,"curve":0,"vis":true,"color":"292929","bCoef":1,"cMask":["ball"],"trait":"ballArea","y":345},{"v0":4,"v1":5,"curve":0,"vis":true,"color":"292929","bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"ballArea"},{"v0":6,"v1":7,"curve":0,"vis":true,"color":"292929","bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"ballArea"},{"v0":5,"v1":6,"curve":180,"vis":false,"color":"000000","bCoef":0,"cMask":["red","blue"],"cGroup":["redKO"]},{"v0":6,"v1":5,"curve":180,"vis":false,"color":"000000","bCoef":0,"cMask":["red","blue"],"cGroup":["blueKO"]},{"v0":8,"v1":10,"vis":true,"color":"292929","bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","y":-90},{"v0":10,"v1":11,"curve":-30,"vis":true,"color":"292929","bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"x":-850},{"v0":11,"v1":9,"vis":true,"color":"292929","bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"y":85},{"v0":0,"v1":8,"vis":true,"color":"292929","bCoef":1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","bias":10,"x":-795},{"v0":12,"v1":13,"vis":true,"color":"292929","bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","y":-85},{"v0":14,"v1":13,"curve":-30,"vis":true,"color":"292929","bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea"},{"v0":9,"v1":2,"vis":true,"color":"292929","bCoef":1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","bias":10,"x":-795},{"v0":17,"v1":15,"curve":0,"vis":true,"color":"a89b76","bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea","y":0},{"v0":18,"v1":16,"curve":0,"vis":true,"color":"5c502f","bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":17,"v1":18,"curve":175,"vis":true,"color":"9e8f65","bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":19,"v1":20,"curve":0,"vis":true,"color":"ededed","bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":22,"v1":21,"curve":0,"vis":true,"color":"8f8f8f","bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":23,"v1":27,"curve":-90,"vis":true,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"v0":24,"v1":28,"curve":90,"vis":true,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"v0":25,"v1":29,"curve":90,"vis":true,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"v0":26,"v1":30,"curve":-90,"vis":true,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"v0":32,"v1":35,"curve":0,"color":"292929","cMask":["c0"],"cGroup":["c0"],"x":420},{"v0":36,"v1":33,"curve":0,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"v0":31,"v1":37,"curve":0,"vis":true,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"y":-200},{"v0":34,"v1":38,"curve":0,"vis":true,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"y":200},{"v0":37,"v1":38,"curve":-60,"color":"292929","cMask":["c0"],"cGroup":["c0"],"x":640},{"v0":39,"v1":40,"curve":-80,"color":"292929","cMask":["c0"],"cGroup":["c0"],"x":420},{"v0":41,"v1":42,"curve":74.63559491093426,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"_data":{"mirror":{},"arc":{"a":[-420,-95],"b":[-420,95],"curve":74.63559491093426,"radius":156.704788136802,"center":[-544.625,0],"from":-0.6513184351902633,"to":0.6513184351902633}}},{"v0":43,"v1":44,"curve":0,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"v0":43,"v1":44,"curve":180,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"v0":43,"v1":44,"curve":-180,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"]},{"v0":20,"v1":22,"curve":-175,"vis":true,"color":"b3b3b3","bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":46,"v1":47,"color":"9e8f65","cMask":["c0"],"x":-55},{"v0":47,"v1":48,"color":"9e8f65","cMask":["c0"]},{"v0":48,"v1":49,"color":"70674d","cMask":["c0"],"x":-35},{"v0":46,"v1":50,"color":"9e8f65","cMask":["c0"]},{"v0":49,"v1":51,"color":"635d4c","cMask":["c0"]},{"v0":50,"v1":52,"color":"807352","cMask":["c0"]},{"v0":51,"v1":53,"color":"70674d","cMask":["c0"]},{"v0":53,"v1":54,"color":"524e43","cMask":["c0"]},{"v0":52,"v1":55,"color":"736641","cMask":["c0"],"x":20},{"v0":54,"v1":55,"color":"5c502f","cMask":["c0"]},{"v0":56,"v1":57,"color":"b3b3b3","cMask":["c0"]},{"v0":56,"v1":58,"color":"c2c1be","bCoef":1,"cMask":["c0"],"cGroup":["c0"]},{"v0":58,"v1":59,"color":"c2c1be","bCoef":1,"cMask":["c0"],"cGroup":["c0"]},{"v0":59,"v1":60,"color":"c9c9e7","cMask":["c0"],"x":20},{"v0":60,"v1":61,"color":"b0b0b0","cMask":["c0"]},{"v0":61,"v1":62,"color":"969696","cMask":["c0"],"x":35},{"v0":62,"v1":63,"color":"b0b0b0","cMask":["c0"]},{"v0":63,"v1":64,"color":"969696","cMask":["c0"],"x":55},{"v0":65,"v1":64,"color":"c2c1be","cMask":["c0"]},{"v0":57,"v1":65,"color":"c2c1be","cMask":["c0"]},{"v0":15,"v1":5,"curve":87.5,"vis":true,"color":"70674d","bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":5,"v1":16,"curve":87.5,"vis":true,"color":"736641","cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":19,"v1":6,"curve":-87.5,"vis":true,"color":"c2c1be","bCoef":1,"cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":6,"v1":21,"curve":-87.5,"vis":true,"color":"969696","cMask":["c0"],"cGroup":["c0"],"trait":"ballArea"},{"v0":66,"v1":67,"curve":0,"vis":true,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"y":200},{"v0":67,"v1":68,"curve":-60,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"x":-640},{"v0":68,"v1":69,"curve":0,"vis":true,"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"y":-200},{"v0":12,"v1":1,"vis":true,"color":"292929","bCoef":1,"cMask":["ball"],"cGroup":["wall"],"bias":10},{"v0":9,"v1":70,"color":"c2c1be","cMask":["c0"],"cGroup":["c0"]},{"v0":71,"v1":8,"color":"9e8f65","cMask":["c0"],"cGroup":["c0"]},{"v0":9,"v1":2,"vis":false,"color":"292929","bCoef":1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea"},{"v0":12,"v1":1,"curve":0,"vis":false,"color":"292929","bCoef":1,"cMask":["ball"],"cGroup":["wall"],"trait":"ballArea","x":795},{"v0":7,"v1":72,"vis":false,"color":"292929","bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"ballArea"},{"v0":8,"v1":0,"vis":false,"color":"292929","cMask":["ball"],"cGroup":["wall"],"trait":"ballArea"},{"v0":71,"v1":73,"color":"c2c1be","cMask":["c0"],"cGroup":["c0"],"x":-795},{"v0":70,"v1":74,"color":"9e8f65","cMask":["c0"],"cGroup":["c0"],"x":-795},{"v0":73,"v1":75,"color":"9e8f65","cMask":["c0"],"cGroup":["c0"],"x":-795},{"v0":75,"v1":74,"color":"c2c1be","cMask":["c0"],"cGroup":["c0"],"x":-795},{"v0":4,"v1":76,"vis":false,"color":"292929","bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"ballArea"},{"v0":3,"v1":45,"vis":true,"color":"292929","bCoef":1,"cMask":["ball"],"cGroup":["wall"],"bias":10},{"v0":45,"v1":14,"vis":true,"color":"292929","bCoef":0.1,"cMask":["ball"],"cGroup":["wall"],"y":85},{"v0":45,"v1":3,"curve":0,"vis":false,"color":"292929","cMask":["ball"]},{"v0":78,"v1":79,"color":"9e8f65","cMask":["c0"],"cGroup":["c0"],"x":795},{"v0":77,"v1":80,"color":"c2c1be","cMask":["c0"],"cGroup":["c0"],"x":795},{"v0":79,"v1":81,"color":"c2c1be","cMask":["c0"],"cGroup":["c0"],"x":795},{"v0":81,"v1":80,"color":"9e8f65","cMask":["c0"],"cGroup":["c0"],"x":795},{"v0":45,"v1":77,"color":"9e8f65","cMask":["c0"],"cGroup":["c0"]},{"v0":78,"v1":12,"color":"c2c1be","cMask":["c0"],"cGroup":["c0"]},{"v0":82,"v1":83,"curve":0,"color":"292929","cMask":["c0"],"cGroup":["c0"]},{"v0":82,"v1":83,"curve":180,"color":"292929","cMask":["c0"],"cGroup":["c0"]},{"v0":82,"v1":83,"curve":-180,"color":"292929","cMask":["c0"],"cGroup":["c0"]}],"goals":[{"p0":[805,85],"p1":[805,-85],"team":"blue","color":"292929"},{"p0":[-805,-85],"p1":[-805,85],"team":"red","color":"979C76"}],"discs":[{"radius":5,"invMass":0,"pos":[-795,85],"color":"70674d","bCoef":0.5,"trait":"goalPost"},{"radius":4,"pos":[-795,-345],"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"y":-345},{"radius":3,"pos":[795,-345],"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"y":-345},{"radius":3,"pos":[795,345],"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"y":345},{"radius":3,"pos":[-795,345],"color":"292929","bCoef":1,"cMask":["redKO","blueKO"],"cGroup":["ball"],"y":345},{"radius":5,"invMass":0,"pos":[-795,-85],"color":"70674d","bCoef":0.5,"trait":"goalPost"},{"radius":5,"invMass":0,"pos":[795,-85],"color":"969696","bCoef":0.5,"trait":"goalPost"},{"radius":5,"invMass":0,"pos":[795,85],"color":"969696","bCoef":0.5,"trait":"goalPost"}],"planes":[{"normal":[0,1],"dist":-345,"bCoef":1,"cMask":["ball"],"trait":"ballArea","color":"423255","_data":{"extremes":{"normal":[0,1],"dist":-345,"canvas_rect":[-525.1413557359203,-247.98341798640683,525.1413557359203,247.98341798640683],"a":[-525.1413557359203,-345],"b":[525.1413557359203,-345]}}},{"normal":[0,-1],"dist":-345,"bCoef":1,"cMask":["ball"],"trait":"ballArea","_data":{"extremes":{"normal":[0,-1],"dist":-345,"canvas_rect":[-525.1413557359203,-247.98341798640683,525.1413557359203,247.98341798640683],"a":[-525.1413557359203,345],"b":[525.1413557359203,345]}}},{"normal":[1,0],"dist":-900,"bCoef":0,"cMask":["all"],"cGroup":["ball"],"_data":{"extremes":{"normal":[1,0],"dist":-900,"canvas_rect":[-525.1413557359203,-247.98341798640683,525.1413557359203,247.98341798640683],"a":[-900,-247.98341798640683],"b":[-900,247.98341798640683]}}},{"normal":[0,-1],"dist":-425,"cMask":["all"],"_data":{"extremes":{"normal":[0,-1],"dist":-425,"canvas_rect":[-525.1413557359203,-247.98341798640683,525.1413557359203,247.98341798640683],"a":[-525.1413557359203,425],"b":[525.1413557359203,425]}}},{"normal":[0,1],"dist":-425,"bCoef":0,"cMask":["all"],"cGroup":["ball"],"_data":{"extremes":{"normal":[0,1],"dist":-425,"canvas_rect":[-525.1413557359203,-247.98341798640683,525.1413557359203,247.98341798640683],"a":[-525.1413557359203,-425],"b":[525.1413557359203,-425]}}},{"normal":[-1,0],"dist":-900,"bCoef":0,"cMask":["all"],"cGroup":["ball"],"_data":{"extremes":{"normal":[-1,0],"dist":-900,"canvas_rect":[-525.1413557359203,-247.98341798640683,525.1413557359203,247.98341798640683],"a":[900,-247.98341798640683],"b":[900,247.98341798640683]}}}],"joints":[],"playerPhysics":{"radius":15,"bCoef":0.01,"invMass":0.5,"damping":0.96,"cGroup":["red","blue"],"acceleration":0.11,"gravity":[0,0],"kickingAcceleration":0.083,"kickingDamping":0.96,"kickStrength":5,"kickback":0},"ballPhysics":{"radius":6.2,"bCoef":0.4,"cMask":["all"],"damping":0.991,"invMass":1.3,"gravity":[0,0],"color":"ededeb","cGroup":["ball"]}}'
 };
 
+// X5 conserva el estadio base disponible de X4 para activar el modo 5v5.
+if (!MAPS.x5) {
+    MAPS.x5 = MAPS.x4;
+}
+
 
 /* ============================================================
    DATABASE
@@ -260,230 +253,6 @@ let db = {
 };
 
 
-
-function getDashboardToken(req) {
-
-    const header =
-        String(
-            req.headers.authorization || ""
-        );
-
-    if (
-        header.toLowerCase().startsWith(
-            "bearer "
-        )
-    ) {
-        return header.slice(7).trim();
-    }
-
-    return String(
-        req.headers["x-dashboard-token"] || ""
-    ).trim();
-}
-
-
-function dashboardAuthorized(req) {
-
-    const configured =
-        String(
-            process.env.DASHBOARD_TOKEN || ""
-        ).trim();
-
-    /*
-    Local development can run the dashboard without a token.
-    Render should always set DASHBOARD_TOKEN.
-    */
-
-    if (!configured) {
-        return true;
-    }
-
-    return (
-        getDashboardToken(req) ===
-        configured
-    );
-}
-
-
-async function initPersistentDatabase() {
-
-    const url =
-        String(
-            process.env.DATABASE_URL || ""
-        ).trim();
-
-    if (!url) {
-
-        console.log(
-            "[DATABASE] DATABASE_URL not configured. Using JSON persistence."
-        );
-
-        return;
-    }
-
-    try {
-
-        pgPool =
-            new Pool({
-                connectionString: url,
-                ssl:
-                    url.includes("localhost") ||
-                    url.includes("127.0.0.1")
-                        ? false
-                        : {
-                            rejectUnauthorized: false
-                        }
-            });
-
-        await pgPool.query(`
-            CREATE TABLE IF NOT EXISTS microhax_state (
-                id INTEGER PRIMARY KEY,
-                state JSONB NOT NULL,
-                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            )
-        `);
-
-        const result =
-            await pgPool.query(
-                "SELECT state FROM microhax_state WHERE id = 1"
-            );
-
-        if (
-            result.rows.length > 0 &&
-            result.rows[0].state
-        ) {
-
-            const persisted =
-                result.rows[0].state;
-
-            db = {
-                ...db,
-                ...persisted,
-                players:
-                    persisted.players || {},
-                bans:
-                    persisted.bans || {},
-                settings:
-                    {
-                        ...db.settings,
-                        ...(persisted.settings || {})
-                    }
-            };
-
-            console.log(
-                "[DATABASE] PostgreSQL state restored."
-            );
-
-        } else {
-
-            await pgPool.query(
-                `
-                INSERT INTO microhax_state
-                    (id, state)
-                VALUES
-                    (1, $1::jsonb)
-                ON CONFLICT (id)
-                DO UPDATE SET
-                    state = EXCLUDED.state,
-                    updated_at = NOW()
-                `,
-                [
-                    JSON.stringify(db)
-                ]
-            );
-
-            console.log(
-                "[DATABASE] PostgreSQL state initialized."
-            );
-        }
-
-    } catch (error) {
-
-        pgPool =
-            null;
-
-        console.error(
-            "[DATABASE] PostgreSQL unavailable. Falling back to JSON:",
-            error.message
-        );
-    }
-}
-
-
-function queuePostgresSync() {
-
-    if (!pgPool) {
-        return;
-    }
-
-    pgSyncPending =
-        true;
-
-    if (pgSyncTimer) {
-        return;
-    }
-
-    pgSyncTimer =
-        setTimeout(
-            async () => {
-
-                pgSyncTimer =
-                    null;
-
-                if (
-                    pgSyncRunning ||
-                    !pgSyncPending
-                ) {
-                    return;
-                }
-
-                pgSyncPending =
-                    false;
-
-                pgSyncRunning =
-                    true;
-
-                try {
-
-                    await pgPool.query(
-                        `
-                        INSERT INTO microhax_state
-                            (id, state, updated_at)
-                        VALUES
-                            (1, $1::jsonb, NOW())
-                        ON CONFLICT (id)
-                        DO UPDATE SET
-                            state = EXCLUDED.state,
-                            updated_at = NOW()
-                        `,
-                        [
-                            JSON.stringify(db)
-                        ]
-                    );
-
-                } catch (error) {
-
-                    console.error(
-                        "[DATABASE] PostgreSQL sync error:",
-                        error.message
-                    );
-
-                } finally {
-
-                    pgSyncRunning =
-                        false;
-
-                    if (pgSyncPending) {
-                        queuePostgresSync();
-                    }
-                }
-
-            },
-            500
-        );
-}
-
-
 function saveDB() {
 
     try {
@@ -493,8 +262,6 @@ function saveDB() {
             JSON.stringify(db, null, 2),
             "utf8"
         );
-
-        queuePostgresSync();
 
     } catch (error) {
 
@@ -1576,13 +1343,25 @@ function chooseNextBlueCaptain() {
             pubMatch.red
         );
 
-    return getWaitingPlayers()
-        .filter(
-            p =>
-                !redSet.has(
-                    p.id
-                )
-        )[0] || null;
+    /*
+    The picker is always the FIRST AVAILABLE PLAYER
+    in the PUB list order. Newcomers are appended to this list.
+    */
+    for (const id of pubMatch.players) {
+
+        if (redSet.has(id)) {
+            continue;
+        }
+
+        const player =
+            findPlayer(id);
+
+        if (player) {
+            return player;
+        }
+    }
+
+    return null;
 }
 
 
@@ -1952,35 +1731,6 @@ let roomReady =
 
 let roomLink =
     null;
-
-
-/* ============================================================
-   WEB DASHBOARD / API
-============================================================ */
-
-let webServer =
-    null;
-
-let webApp =
-    null;
-
-let webWs =
-    null;
-
-let pgPool =
-    null;
-
-let pgSyncTimer =
-    null;
-
-let pgSyncRunning =
-    false;
-
-let pgSyncPending =
-    false;
-
-let serverStartedAt =
-    Date.now();
 
 let shuttingDown =
     false;
@@ -5403,7 +5153,7 @@ function setLobbyMap(name) {
 
     try {
 
-        room.setDefaultStadium(
+        room.setCustomStadium(
             MAPS[name]
         );
 
@@ -5423,6 +5173,52 @@ function setLobbyMap(name) {
         );
 
     }
+}
+
+
+function startPublicOneVsOne(players) {
+
+    if (!room || players.length !== 2) {
+        return false;
+    }
+
+    resetPubMatchToWaiting();
+
+    if (currentMap !== "x1") {
+        setLobbyMap("x1");
+    }
+
+    const red = players[0];
+    const blue = players[1];
+
+    room.setPlayerTeam(red.id, 1);
+    room.setPlayerTeam(blue.id, 2);
+
+    announce(
+        "⚔️ PUB 1v1 | SIN PICK",
+        null,
+        CONFIG.colors.vip,
+        1,
+        1
+    );
+
+    announce(
+        `🔴 RED: ${red.name} | 🔵 BLUE: ${blue.name}`,
+        null,
+        CONFIG.colors.success,
+        1
+    );
+
+    setTimeout(() => {
+        if (!room) return;
+
+        const current = getPlayers();
+        if (current.length === 2) {
+            room.startGame();
+        }
+    }, 800);
+
+    return true;
 }
 
 
@@ -5492,6 +5288,16 @@ function updatePublicLobbySetup() {
             );
 
             return;
+        }
+
+        if (count === 2) {
+
+            const started =
+                startPublicOneVsOne(players);
+
+            if (started) {
+                return;
+            }
         }
 
         if (
@@ -6694,6 +6500,15 @@ function onPlayerJoin(player) {
         `[JOIN] ${player.name} | Role=${detectedRole}`
     );
 
+    // New players entering during a PUB are appended to the original list order.
+    if (
+        pubMatch &&
+        pubMatch.active &&
+        !pubMatch.players.includes(player.id)
+    ) {
+        pubMatch.players.push(player.id);
+    }
+
     pruneExpiredBans();
 
     if (
@@ -7380,8 +7195,29 @@ function onTeamVictory(scores) {
         setTimeout(
             () => {
 
-                rotatePubAfterVictory(
-                    winner
+                if (
+                    pubMatch &&
+                    pubMatch.active &&
+                    Number(pubMatch.mode || 0) >= 2
+                ) {
+                    rotatePubAfterVictory(
+                        winner
+                    );
+                    return;
+                }
+
+                // 1v1 no usa PICK: se reconstruye el lobby normal.
+                resetPubMatchToWaiting();
+
+                if (room) {
+                    getPlayers().forEach(
+                        p => room.setPlayerTeam(p.id, 0)
+                    );
+                }
+
+                setTimeout(
+                    updatePublicLobbySetup,
+                    250
                 );
 
             },
@@ -7837,11 +7673,6 @@ function onRoomLink(
     link
 ) {
 
-    roomLink =
-        link;
-
-    broadcastDashboard();
-
     console.log("");
     console.log(
         "================================================"
@@ -8138,888 +7969,13 @@ function consoleCommand(
             if (cmd) {
 
                 console.log(
-                    "Commands: save, players, rr, map x1|x3|x4"
+                    "Commands: save, players, rr, map x1|x3|x4|x5"
                 );
 
             }
 
     }
 
-}
-
-
-
-/* ============================================================
-   DASHBOARD / HTTP API
-============================================================ */
-
-function getDashboardPlayers() {
-
-    if (!room) {
-        return [];
-    }
-
-    return getPlayers().map(
-        player => {
-
-            const data =
-                getData(player);
-
-            return {
-                id: player.id,
-                name: player.name,
-                auth: player.auth || null,
-                conn: player.conn || null,
-                team: player.team,
-                admin: Boolean(player.admin),
-                role: getEffectiveRole(player),
-                elo: Number(data.elo || CONFIG.defaultElo),
-                level: Number(data.level || 1),
-                coins: Number(data.coins || 0),
-                wins: Number(data.wins || 0),
-                losses: Number(data.losses || 0),
-                goals: Number(data.goals || 0),
-                assists: Number(data.assists || 0)
-            };
-        }
-    );
-}
-
-
-function getDashboardRanking(limit = 25) {
-
-    return Object.entries(
-        db.players || {}
-    )
-        .map(
-            ([auth, data]) => ({
-                auth,
-                name:
-                    data.name ||
-                    "Unknown",
-                role:
-                    data.role ||
-                    "User",
-                elo:
-                    Number(
-                        data.elo ||
-                        CONFIG.defaultElo
-                    ),
-                level:
-                    Number(
-                        data.level ||
-                        1
-                    ),
-                wins:
-                    Number(
-                        data.wins ||
-                        0
-                    ),
-                losses:
-                    Number(
-                        data.losses ||
-                        0
-                    ),
-                goals:
-                    Number(
-                        data.goals ||
-                        0
-                    ),
-                assists:
-                    Number(
-                        data.assists ||
-                        0
-                    ),
-                coins:
-                    Number(
-                        data.coins ||
-                        0
-                    )
-            })
-        )
-        .sort(
-            (a, b) =>
-                b.elo -
-                a.elo
-        )
-        .slice(
-            0,
-            limit
-        );
-}
-
-
-function getDashboardSnapshot() {
-
-    const players =
-        getDashboardPlayers();
-
-    const red =
-        players.filter(
-            p =>
-                p.team === 1
-        );
-
-    const blue =
-        players.filter(
-            p =>
-                p.team === 2
-        );
-
-    const spectators =
-        players.filter(
-            p =>
-                p.team === 0
-        );
-
-    const currentPick =
-        pick && pick.active
-            ? {
-                active: true,
-                turn: pick.turn,
-                captains:
-                    pick.captains || [],
-                selected:
-                    pick.selected || []
-            }
-            : {
-                active: false,
-                turn: 0,
-                captains: [],
-                selected: []
-            };
-
-    const currentPub =
-        pubMatch
-            ? {
-                active:
-                    Boolean(
-                        pubMatch.active
-                    ),
-                mode:
-                    Number(
-                        pubMatch.mode ||
-                        0
-                    ),
-                phase:
-                    pubMatch.phase ||
-                    "waiting",
-                red:
-                    pubMatch.red || [],
-                blue:
-                    pubMatch.blue || [],
-                redCaptain:
-                    pubMatch.redCaptain ||
-                    null,
-                blueCaptain:
-                    pubMatch.blueCaptain ||
-                    null,
-                turnTeam:
-                    pubMatch.turnTeam ||
-                    0,
-                round:
-                    pubMatch.round ||
-                    0
-            }
-            : null;
-
-    return {
-
-        status:
-            room
-                ? "online"
-                : "offline",
-
-        uptime:
-            Math.floor(
-                (
-                    Date.now() -
-                    serverStartedAt
-                ) / 1000
-            ),
-
-        room: {
-            name:
-                CONFIG.roomName,
-
-            link:
-                roomLink,
-
-            players:
-                players.length,
-
-            maxPlayers:
-                CONFIG.maxPlayers,
-
-            map:
-                currentMap,
-
-            public:
-                Boolean(
-                    CONFIG.public
-                ),
-
-            running:
-                Boolean(
-                    gameRunning
-                ),
-
-            scoreLimit:
-                CONFIG.scoreLimit,
-
-            timeLimit:
-                CONFIG.timeLimit
-        },
-
-        teams: {
-            red,
-            blue,
-            spectators
-        },
-
-        pick:
-            currentPick,
-
-        pub:
-            currentPub,
-
-        ranking:
-            getDashboardRanking(),
-
-        matches:
-            (
-                Array.isArray(
-                    matchHistory
-                )
-                    ? matchHistory
-                        .slice(-20)
-                        .reverse()
-                    : []
-            ),
-
-        economy: {
-            profiles:
-                Object.keys(
-                    db.players || {}
-                ).length
-        },
-
-        database: {
-            postgres:
-                Boolean(pgPool),
-            jsonFile:
-                true,
-            updated:
-                new Date().toISOString()
-        }
-    };
-}
-
-
-function broadcastDashboard() {
-
-    if (!webWs) {
-        return;
-    }
-
-    const payload =
-        JSON.stringify({
-            type: "state",
-            data:
-                getDashboardSnapshot()
-        });
-
-    webWs.clients.forEach(
-        client => {
-
-            if (
-                client.readyState === 1
-            ) {
-
-                client.send(
-                    payload
-                );
-            }
-        }
-    );
-}
-
-
-function dashboardFindPlayer(id) {
-
-    const numeric =
-        Number(id);
-
-    if (
-        Number.isFinite(numeric)
-    ) {
-
-        const byId =
-            getPlayers()
-                .find(
-                    p =>
-                        p.id ===
-                        numeric
-                );
-
-        if (byId) {
-            return byId;
-        }
-    }
-
-    return findPlayer(id);
-}
-
-
-function dashboardCommandGuard(req, res) {
-
-    if (
-        !dashboardAuthorized(req)
-    ) {
-
-        res.status(401).json({
-            ok: false,
-            error: "Unauthorized"
-        });
-
-        return false;
-    }
-
-    return true;
-}
-
-
-function startDashboardServer() {
-
-    if (
-        webServer ||
-        !CONFIG.dashboard.enabled
-    ) {
-        return;
-    }
-
-    webApp =
-        express();
-
-    webApp.disable(
-        "x-powered-by"
-    );
-
-    webApp.use(
-        express.json({
-            limit: "64kb"
-        })
-    );
-
-    webApp.use(
-        express.static(
-            CONFIG.dashboard.publicPath
-        )
-    );
-
-    webApp.get(
-        "/health",
-        (req, res) => {
-
-            res.json({
-                ok: true,
-                status: room
-                    ? "online"
-                    : "starting",
-                service:
-                    "microhax",
-                uptime:
-                    Math.floor(
-                        (
-                            Date.now() -
-                            serverStartedAt
-                        ) / 1000
-                    )
-            });
-
-        }
-    );
-
-    webApp.get(
-        "/api/health",
-        (req, res) => {
-
-            res.json({
-                ok: true,
-                roomOnline:
-                    Boolean(room),
-                roomLink:
-                    roomLink,
-                players:
-                    room
-                        ? getPlayers().length
-                        : 0,
-                postgres:
-                    Boolean(pgPool)
-            });
-
-        }
-    );
-
-    webApp.get(
-        "/api/state",
-        (req, res) => {
-
-            res.json(
-                getDashboardSnapshot()
-            );
-
-        }
-    );
-
-    webApp.get(
-        "/api/players",
-        (req, res) => {
-
-            res.json({
-                players:
-                    getDashboardPlayers()
-            });
-
-        }
-    );
-
-    webApp.get(
-        "/api/ranking",
-        (req, res) => {
-
-            const limit =
-                Math.min(
-                    100,
-                    Math.max(
-                        1,
-                        Number(
-                            req.query.limit ||
-                            25
-                        )
-                    )
-                );
-
-            res.json({
-                ranking:
-                    getDashboardRanking(
-                        limit
-                    )
-            });
-
-        }
-    );
-
-    webApp.get(
-        "/api/matches",
-        (req, res) => {
-
-            res.json({
-                matches:
-                    Array.isArray(
-                        matchHistory
-                    )
-                        ? matchHistory
-                            .slice(-50)
-                            .reverse()
-                        : []
-            });
-
-        }
-    );
-
-    webApp.post(
-        "/api/admin/announce",
-        (req, res) => {
-
-            if (
-                !dashboardCommandGuard(
-                    req,
-                    res
-                )
-            ) return;
-
-            const message =
-                String(
-                    req.body?.message ||
-                    ""
-                ).trim();
-
-            if (!message) {
-
-                return res
-                    .status(400)
-                    .json({
-                        ok: false,
-                        error:
-                            "Missing message"
-                    });
-            }
-
-            announce(
-                `📢 ${message}`,
-                null,
-                CONFIG.colors.vip,
-                1,
-                1
-            );
-
-            res.json({
-                ok: true
-            });
-
-        }
-    );
-
-    webApp.post(
-        "/api/admin/kick",
-        (req, res) => {
-
-            if (
-                !dashboardCommandGuard(
-                    req,
-                    res
-                )
-            ) return;
-
-            const target =
-                dashboardFindPlayer(
-                    req.body?.id
-                );
-
-            if (!target) {
-
-                return res
-                    .status(404)
-                    .json({
-                        ok: false,
-                        error:
-                            "Player not found"
-                    });
-            }
-
-            room.kickPlayer(
-                target.id,
-                String(
-                    req.body?.reason ||
-                    "Dashboard moderation"
-                ),
-                false
-            );
-
-            res.json({
-                ok: true,
-                player:
-                    target.name
-            });
-
-        }
-    );
-
-    webApp.post(
-        "/api/admin/ban",
-        (req, res) => {
-
-            if (
-                !dashboardCommandGuard(
-                    req,
-                    res
-                )
-            ) return;
-
-            const target =
-                dashboardFindPlayer(
-                    req.body?.id
-                );
-
-            if (!target) {
-
-                return res
-                    .status(404)
-                    .json({
-                        ok: false,
-                        error:
-                            "Player not found"
-                    });
-            }
-
-            const reason =
-                String(
-                    req.body?.reason ||
-                    "Dashboard ban"
-                );
-
-            if (
-                target.auth
-            ) {
-
-                db.bans[
-                    target.auth
-                ] = {
-                    reason,
-                    at:
-                        Date.now()
-                };
-
-                saveDB();
-            }
-
-            room.kickPlayer(
-                target.id,
-                reason,
-                true
-            );
-
-            res.json({
-                ok: true,
-                player:
-                    target.name
-            });
-
-        }
-    );
-
-    webApp.post(
-        "/api/admin/team",
-        (req, res) => {
-
-            if (
-                !dashboardCommandGuard(
-                    req,
-                    res
-                )
-            ) return;
-
-            const target =
-                dashboardFindPlayer(
-                    req.body?.id
-                );
-
-            const team =
-                Number(
-                    req.body?.team
-                );
-
-            if (
-                !target ||
-                ![0, 1, 2].includes(team)
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-                        ok: false,
-                        error:
-                            "Invalid player/team"
-                    });
-            }
-
-            room.setPlayerTeam(
-                target.id,
-                team
-            );
-
-            res.json({
-                ok: true
-            });
-
-        }
-    );
-
-    webApp.post(
-        "/api/admin/admin",
-        (req, res) => {
-
-            if (
-                !dashboardCommandGuard(
-                    req,
-                    res
-                )
-            ) return;
-
-            const target =
-                dashboardFindPlayer(
-                    req.body?.id
-                );
-
-            if (!target) {
-
-                return res
-                    .status(404)
-                    .json({
-                        ok: false,
-                        error:
-                            "Player not found"
-                    });
-            }
-
-            room.setPlayerAdmin(
-                target.id,
-                Boolean(
-                    req.body?.admin
-                )
-            );
-
-            res.json({
-                ok: true
-            });
-
-        }
-    );
-
-    webApp.post(
-        "/api/admin/map",
-        (req, res) => {
-
-            if (
-                !dashboardCommandGuard(
-                    req,
-                    res
-                )
-            ) return;
-
-            const map =
-                String(
-                    req.body?.map ||
-                    ""
-                )
-                    .toLowerCase()
-                    .trim();
-
-            if (
-                !MAPS[map]
-            ) {
-
-                return res
-                    .status(404)
-                    .json({
-                        ok: false,
-                        error:
-                            "Unknown map",
-                        maps:
-                            Object.keys(MAPS)
-                    });
-            }
-
-            try {
-
-                room.setCustomStadium(
-                    MAPS[map]
-                );
-
-                currentMap =
-                    map;
-
-                db.settings.currentMap =
-                    map;
-
-                saveDB();
-
-                res.json({
-                    ok: true,
-                    map
-                });
-
-            } catch (error) {
-
-                res
-                    .status(500)
-                    .json({
-                        ok: false,
-                        error:
-                            error.message
-                    });
-            }
-
-        }
-    );
-
-    webApp.post(
-        "/api/admin/save",
-        (req, res) => {
-
-            if (
-                !dashboardCommandGuard(
-                    req,
-                    res
-                )
-            ) return;
-
-            saveDB();
-
-            res.json({
-                ok: true
-            });
-
-        }
-    );
-
-    webApp.use(
-        (req, res, next) => {
-
-            if (
-                req.method === "GET" &&
-                !req.path.startsWith("/api/") &&
-                req.path !== "/health" &&
-                req.path !== "/api/health"
-            ) {
-
-                return res.sendFile(
-                    path.join(
-                        CONFIG.dashboard.publicPath,
-                        "index.html"
-                    )
-                );
-            }
-
-            next();
-        }
-    );
-
-    webServer =
-        http.createServer(
-            webApp
-        );
-
-    webWs =
-        new WebSocketServer({
-            server:
-                webServer,
-            path:
-                "/ws"
-        });
-
-    webWs.on(
-        "connection",
-        socket => {
-
-            socket.send(
-                JSON.stringify({
-                    type: "state",
-                    data:
-                        getDashboardSnapshot()
-                })
-            );
-
-        }
-    );
-
-    webServer.listen(
-        CONFIG.dashboard.port,
-        CONFIG.dashboard.host,
-        () => {
-
-            console.log(
-                `[DASHBOARD] Listening on ${CONFIG.dashboard.host}:${CONFIG.dashboard.port}`
-            );
-
-        }
-    );
-
-    setInterval(
-        broadcastDashboard,
-        1000
-    );
 }
 
 
@@ -9030,10 +7986,6 @@ function startDashboardServer() {
 async function start() {
 
     loadDB();
-
-    await initPersistentDatabase();
-
-    startDashboardServer();
 
     const token =
         await getToken();
@@ -9076,14 +8028,17 @@ async function start() {
 
     try {
         const stadium =
-            MAPS[CONFIG.defaultStadium] || "Big";
+            MAPS[CONFIG.defaultStadium] || MAPS.x3;
 
-        room.setDefaultStadium(stadium);
+        room.setCustomStadium(stadium);
         currentMap = CONFIG.defaultStadium;
     } catch (error) {
         console.error("[MAP] Failed:", error);
 
-        room.setDefaultStadium("Big");
+        try {
+            room.setDefaultStadium("Big");
+        } catch (_) {}
+
         currentMap = "x3";
     }
 
