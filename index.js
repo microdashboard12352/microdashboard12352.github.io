@@ -7892,7 +7892,8 @@ async function start() {
     );
 
     const HBInit = 
-        await require("haxball.js")();
+        await require("haxball.js").default();
+
 
 
 
