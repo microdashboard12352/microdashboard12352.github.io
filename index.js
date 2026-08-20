@@ -55,7 +55,7 @@ const path = require("path");
 const readline = require("readline");
 const { exec } = require("child_process");
 
-const HaxballJS = require("haxball.js"); // 💎 Sin el .default al final
+const { default: HaxballJS } = require("haxball.js"); // ✅ Extrae la función directamente del objeto modular
 
 
 
@@ -7893,6 +7893,7 @@ async function start() {
 
     const HBInit =
         await HaxballJS();
+
 
     room =
         HBInit({
